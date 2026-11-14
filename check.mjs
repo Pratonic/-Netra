@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {decide,nearest,metrics} from './dist/decision.mjs';
+const good={elapsed:1400,multiple:false,samples:4,quality:true,consistent:true,distance:.35,margin:.2,active:true,liveness:true};
+const cases=[['good',{},'allow'],['timeout',{elapsed:2001},'review'],['multiple',{multiple:true},'deny'],['no face',{samples:0},'review'],['dim',{quality:false},'review'],['changed identity',{consistent:false},'review'],['unknown',{distance:.72},'deny'],['ambiguous',{distance:.53},'review'],['close runner up',{margin:.02},'review'],['suspended',{active:false},'deny'],['static portrait',{liveness:false},'review'],['no identity',{distance:null},'review']];
+for(const [name,override,expected] of cases)assert.equal(decide({...good,...override}).outcome,expected,name);
+const a={id:'a',descriptors:[[0,0],[.1,.1]]},b={id:'b',descriptors:[[1,1]]};
+assert.equal(nearest([.05,.05],[b,a])[0].user.id,'a');
+const stats=metrics([{demo:true,elapsed:1000,outcome:'allow',groundTruth:'print'},{elapsed:1800,outcome:'deny',groundTruth:'print'},{elapsed:2100,outcome:'allow',groundTruth:'video'},{elapsed:1400,outcome:'review',groundTruth:'genuine'}]);
+assert.equal(stats.count,3);assert.equal(stats.apcer,.5);assert.equal(stats.frr,1);assert.equal(stats.p95,2100);assert.equal(stats.within,2/3);assert.equal(metrics([]).mean,null);
+console.log('PASS: 12 decision cases, nearest identity, timing, labeled metrics and demo exclusion');
