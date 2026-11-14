@@ -33,3 +33,7 @@ nav a{color:#83758e;font-size:12px}.sidebar nav a.active{color:#7856ab}.sidebar 
 .otp-input{font-size:28px!important;letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums}
 .result-card.allow .person-initial{background:#def1df}.result-card.deny .person-initial{background:#f9e9e6;color:#9c453b}.result-card.stepup .person-initial{background:#fff1cf;color:#8b671e}
 @media(max-width:600px){.compact-result{padding:24px}.compact-result h2{font-size:25px}.decision-person strong{font-size:16px}}
+@media(min-width:701px){.access-strip.with-sensor{grid-template-columns:repeat(4,1fr)}}
+.sensor-strip{position:relative}.sensor-strip .sensor-connect{margin-left:auto;font-size:10px;white-space:nowrap}
+.sensor-strip.connected>svg{color:#7e67ef}.sensor-strip.present>svg{color:#2f9e5b}.sensor-strip.present strong{color:#2f9e5b}
+.decision-metrics .ir-metric{grid-column:1/-1}.decision-metrics .ir-metric dd{font-size:20px}

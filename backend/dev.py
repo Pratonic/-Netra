@@ -4,7 +4,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from service import App, MemoryStore, password_hash
 
 salt=secrets.token_hex(16)
-app=App(MemoryStore(),{'gateway':secrets.token_urlsafe(32),'salt':salt,'admin_hash':password_hash('admin',salt),'access_hash':password_hash('AWS',salt),'stream_role':''})
+app=App(MemoryStore(),{'gateway':secrets.token_urlsafe(32),'salt':salt,'admin_hash':password_hash('admin',salt),'access_hash':password_hash('AWS',salt),'stream_role':'','require_ir':os.environ.get('TRINETRA_REQUIRE_IR')=='1'})
 lock=threading.RLock()
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):self.process()

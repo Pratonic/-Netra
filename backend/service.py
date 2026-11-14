@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from http.cookies import SimpleCookie
-from policy import DEFAULT_SCHEDULE, validate_schedule, schedule_decision
+from policy import DEFAULT_SCHEDULE, validate_schedule, schedule_decision, ir_evidence
 
 SESSION_SECONDS=8*60*60
 def password_hash(password,salt):return hashlib.pbkdf2_hmac('sha256',password.encode(),salt.encode(),210000).hex()
@@ -226,19 +226,34 @@ class App:
                 return self.reply(200,{'schedule':schedule})
             if path=='/api/precheck' and method=='POST':
                 s=self.auth(event,mutate=True);b=self.data(event);p=self.person(b.get('personId',''))
-                if not p:return self.reply(200,self.record(None,'deny','Identity not recognized.',stage='initial'))
+                ir=ir_evidence(b.get('ir'));now=int(self.clock())
+                if not p:return self.reply(200,self.record(None,'deny','Identity not recognized.',stage='initial',**ir))
                 decision=schedule_decision(p,self.campus(),datetime.fromtimestamp(self.clock(),timezone.utc))
-                review_id=None
+                review_id=None;presence_key=digest(s['pk']+p['id'])
+                if ir['irStatus']=='absent' and decision['outcome']!='deny':
+                    # A face was matched on camera but nothing physical stood at the kiosk: likely a screen or injected video.
+                    decision={'outcome':'deny','reason':'No physical presence at the kiosk sensor. Ask security for verification.'}
+                    self.store.put({'pk':'PAD_BLOCK#'+presence_key,'sk':'STATE','expiresAt':now+600})
+                    self.store.put({'pk':'IR_BLOCK#'+presence_key,'sk':'STATE','expiresAt':now+600})
+                elif self.config.get('require_ir') and ir['irStatus']!='present' and decision['outcome']=='eligible':
+                    decision={'outcome':'stepup','reason':'Kiosk presence sensor unavailable. Ask an attendant.'}
+                if ir['irStatus']=='present':self.store.put({'pk':'IR_OK#'+presence_key,'sk':'STATE','expiresAt':now+300})
                 if decision['outcome']=='eligible':
                     review_id=secrets.token_urlsafe(24)
                     self.store.put({'pk':'REVIEW#'+review_id,'sk':'STATE','session':s['pk'],'personId':p['id'],'expiresAt':int(self.clock())+300})
                     decision={'outcome':'stepup','reason':'Confirm live presence, or request an attended check.'}
-                return self.reply(200,{**self.record(p['id'],decision['outcome'],decision['reason'],stage='initial',elapsed=min(max(float(b.get('elapsed',0)),0),60000)),'reviewId':review_id})
+                return self.reply(200,{**self.record(p['id'],decision['outcome'],decision['reason'],stage='initial',elapsed=min(max(float(b.get('elapsed',0)),0),60000),**ir),'reviewId':review_id})
             if path in ('/api/email/start','/api/email/verify') and method=='POST':return self.email_review(event,path)
             if path=='/api/liveness/start' and method=='POST':
                 s=self.auth(event,mutate=True);b=self.data(event);p=self.person(b.get('personId',''))
                 decision=schedule_decision(p,self.campus(),datetime.fromtimestamp(self.clock(),timezone.utc))
                 if decision['outcome']!='eligible':return self.reply(409,{'error':decision['reason'],'outcome':decision['outcome']})
+                presence_key=digest(s['pk']+p['id']);clock_now=int(self.clock())
+                blocked=self.store.get('IR_BLOCK#'+presence_key)
+                if blocked and blocked['expiresAt']>clock_now:raise HTTPError(403,'No physical presence was detected at the kiosk. Contact security.')
+                if self.config.get('require_ir'):
+                    seen=self.store.get('IR_OK#'+presence_key)
+                    if not seen or seen['expiresAt']<=clock_now:raise HTTPError(409,'Scan again at the kiosk sensor first.')
                 if not self.reko or not self.sts:raise HTTPError(503,'Cloud liveness is not connected. Ask security for verification.')
                 now=int(self.clock());attempts=self.store.increment('LIVE_RATE#'+digest(s['pk'])+f'#{now//600}',now+1200)
                 if attempts>10:raise HTTPError(429,'Live-check limit reached. Ask security for verification.')

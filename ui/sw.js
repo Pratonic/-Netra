@@ -1,5 +1,5 @@
 const CACHE='aegis-shell-v4';
-const SHELL=['/','/style.css?v=4','/app.mjs?v=4','/offline.mjs','/biometrics.mjs','/vendor/face-api.min.js'];
+const SHELL=['/','/style.css?v=4','/app.mjs?v=4','/offline.mjs','/sensor.mjs','/biometrics.mjs','/vendor/face-api.min.js'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('aegis-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{

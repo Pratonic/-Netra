@@ -29,3 +29,20 @@ The hypothesis to test is that synchronized, ambient-subtracted dual-band readin
 6. Initially show IR only as experimental evidence in an operator/developer view. Missing, stale or low-quality readings lead to attended verification. Keep all automatic gate decisions on the trusted server path until fusion is calibrated and the acquisition chain is secured.
 
 Do not add a browser-controlled relay that opens whenever the page displays Allow. A future gate controller should verify a short-lived, one-use server authorization tied to that gate and reject offline/replayed commands. Physical wiring, optical safety assessment and firmware remain separate work; no hardware is connected or simulated as trusted evidence by this update.
+
+## Implemented prototype: ESP8266 + HW-201 + KY-016 (14 November 2026)
+
+This is the low-cost kit actually on hand. It does **not** implement the dual-wavelength experiment above. The HW-201 is used as a **physical-presence check** (something real is in front of the kiosk), which counters injected or replayed camera video with nobody at the kiosk. Its optional analog value is logged as single-wavelength (~940 nm) reflectance for evaluation only.
+
+| Wire | NodeMCU (ESP8266) | ESP32 DevKit |
+| --- | --- | --- |
+| HW-201 VCC / GND / OUT | 3V3 / GND / D5 | 3V3 / GND / GPIO27 |
+| KY-016 R / G / B (220 Ω each if the module has none) | D6 / D7 / D2 | GPIO25 / GPIO26 / GPIO33 |
+| KY-016 "–" | GND | GND |
+| Optional HW-201 analog tap (LM393 input that varies with distance) | A0 | GPIO34 |
+
+- Firmware: `hardware/trinetra_sensor/trinetra_sensor.ino` (115200 baud, JSON lines at ~20 Hz, LED commands `ALLOW|STEPUP|DENY|OFFLINE|SCAN|IDLE`, `N <nonce>`).
+- Flash: `arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 hardware/trinetra_sensor` then `arduino-cli upload -p COMx --fqbn esp8266:esp8266:nodemcuv2 hardware/trinetra_sensor`. Close any Serial Monitor first.
+- Kiosk: `ui/sensor.mjs` uses Web Serial (Chrome/Edge). Click **Connect** on the IR presence strip once; afterwards it reconnects automatically. Presence held for 400 ms starts a scan when the camera is ready.
+- Backend (`policy.ir_evidence`): readings must be fresh (≤1.5 s old, ≥3 samples, matching the scan nonce). Presence ratio ρ ≥ 0.5 → `present`; ρ < 0.5 → **Deny** and liveness blocked for 10 minutes. Missing sensor → unchanged behaviour, unless `TRINETRA_REQUIRE_IR=1`, in which case the kiosk steps up and cloud liveness is refused until a fresh `present` scan. IR evidence never produces Allow.
+- Limits: the browser relays sensor data, so this is not a trusted hardware attestation; a held-up phone or photo also reflects IR and will read `present`. Reflectance separation of skin vs silicone/3D masks is unmeasured.

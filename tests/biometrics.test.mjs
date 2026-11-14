@@ -31,3 +31,16 @@ test('one good frame and then unusable frames cannot identify',async()=>{
 test('slow inference never silently becomes a successful match',async()=>{
  sequence=[[face()],[face()]];delay=2100;const r=await recognize({width:960,height:720},people);assert.equal(r.person,null);assert.equal(r.outcome,'stepup');assert.ok(r.elapsed<2100);delay=0;
 });
+import {parseLine,summarize} from '../ui/sensor.mjs';
+test('sensor lines parse and reject garbage',()=>{
+ assert.deepEqual(parseLine('{"t":"ir","present":1,"raw":612,"ms":5,"n":"ab"}'),{present:true,raw:612,ms:5,n:'ab'});
+ assert.equal(parseLine('{"t":"hello","id":"trinetra-esp8266"}').hello,'trinetra-esp8266');
+ assert.equal(parseLine('not json'),null);
+ assert.equal(parseLine('{"t":"ir","present":2,"raw":1}'),null);
+});
+test('sensor summary counts only fresh readings for the current nonce',()=>{
+ const list=[{present:false,raw:10,at:0,n:'old'},...Array.from({length:10},(_,i)=>({present:i<8,raw:600+i,at:1000+i*50,n:'new'}))];
+ const s=summarize(list,1500,{windowMs:2500,nonce:'new'});
+ assert.equal(s.status,'ok');assert.equal(s.samples,10);assert.equal(s.presentRatio,.8);assert.equal(s.rawMedian,605);assert.equal(s.ageMs,50);
+ assert.equal(summarize(list,9000,{windowMs:1000,nonce:'new'}).status,'stale');
+});
