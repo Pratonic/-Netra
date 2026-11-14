@@ -1,20 +1,11 @@
-# Verification record
+# Aegis verification record
 
-Verified during development:
+- **35 backend tests passed.** Role authorization, credentials, throttling, cookie flags, expiry, viewer binding, CSRF, schedule boundaries, overnight access, timezone handling, closures, suspension, enrollment expiry, prechecks never allowing, trusted liveness decisions, replay rejection, wrong identity, revocation/schedule changes during verification, named-history deletion and safe offline sync were covered.
+- JavaScript syntax checks and the official AWS liveness bundle build passed.
+- Browser checks confirmed both requested accounts, administrator schedule saving, access-role navigation, safe connection-loss behavior, anonymous fallback recording, reopening from the offline cache, and queue acknowledgment/removal after reconnection and reauthentication.
+- AWS STS authentication succeeded in account 010526260400. After explicit user approval, the two scoped roles, encrypted DynamoDB table, Lambda service, protected Function URL and three-day CloudWatch retention were provisioned.
+- **10 deployed AWS API smoke checks passed:** gateway rejection without its secret, both role logins, reading shared state, access-role schedule denial, both logouts and invalidated sessions. No human portraits, templates or live video were uploaded during these smoke checks.
 
-- JavaScript module syntax checks passed.
-- Twelve decision-policy cases passed: valid allow, timeout, multiple people, missing face, weak image quality, identity changes, unknown person, ambiguous distance, ambiguous margin, suspended enrollment, incomplete active prompt and missing enrolled identity.
-- Nearest identity ranking, demo exclusion, labeled attack/genuine metric denominators, latency P95 and budget fraction passed.
-- Local HTTP service returned 200. Dashboard navigation, enrollment dialog, simulated allow animation and explicit demo labeling were inspected in the browser. Demo checks did not increment measured metrics.
-- Real Tiny Face Detector + landmark + recognition inference was run against a public upstream test portrait. It detected one face and produced a 128-value descriptor. The portrait was discarded; no named identity or consent record was created.
-- The actual enrollment upload flow reached “Face reference ready.” with a correctly cropped reference. Test-only diagnostic pages and portrait assets were removed from the deliverable.
-- Cold WebGL full inference on the test portrait took about 2.08 seconds; a subsequent full inference on a resized portrait at input size 416 took about 173 ms. CPU inference took about 7 seconds. These are individual fixture diagnostics, not end-to-end camera benchmarks. Full model warm-up now precedes timed verification.
+Not yet verified: a real person's Rekognition video session, recognition/liveness accuracy against the listed attacks, target-kiosk timing and physical-gate enforcement.
 
-Not verified:
-
-- Actual webcam recognition and active liveness completion on the user's intended hardware.
-- Performance or error rates against print, phone screen, video replay, mask, virtual camera or deepfake attacks.
-- A guaranteed end-to-end decision or recognized name within two seconds.
-- Production authentication, authorization, server-side freshness, protected biometric storage or AWS integration.
-
-The app records measured camera sessions, requests further verification when evidence or timing is insufficient, and labels demonstration output separately. Passing software policy tests does not establish biometric or presentation-attack accuracy.
+Policy tests use deterministic AWS mocks for the liveness/matching outcomes. They establish server decision/replay behavior, not biometric accuracy. The initial local recognition budget is two seconds; additional cloud liveness may take longer.

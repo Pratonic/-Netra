@@ -1,4 +1,9 @@
 Set-Location -LiteralPath $PSScriptRoot
-Write-Host 'Aegis: open http://127.0.0.1:8766 in Chrome or Edge.'
-Write-Host 'Press Ctrl+C to stop the server.'
-python -m http.server 8766 --bind 127.0.0.1 --directory dist
+if (-not (Test-Path -LiteralPath backend/public/index.html)) {
+    Write-Host 'First run: npm install; npm run build'
+    exit 1
+}
+Write-Host 'Aegis: open http://127.0.0.1:8770 in Chrome or Edge.'
+Write-Host 'Local data is temporary. AWS liveness is disabled locally.'
+Write-Host 'Press Ctrl+C to stop the service.'
+python backend/dev.py

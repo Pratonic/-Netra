@@ -1,0 +1,6 @@
+const DB='aegis-offline-v2', TTL=86400000;
+async function open(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore('pending',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+async function transaction(mode,action){const db=await open();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('pending',mode),store=tx.objectStore('pending');let result;const req=action(store);req.onsuccess=()=>{result=req.result;};tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}finally{db.close();}}
+export async function pending(){const records=await transaction('readonly',s=>s.getAll());const expired=records.filter(r=>r.timestamp<Date.now()-TTL||r.timestamp>Date.now()+300000);for(const r of expired)await transaction('readwrite',s=>s.delete(r.id));return records.filter(r=>!expired.includes(r));}
+export async function queueFallback(){const records=await pending();if(records.length>=100)throw Error('Offline queue is full. Contact security.');const record={id:crypto.randomUUID(),timestamp:Date.now(),outcome:'stepup',reason:'offline'};await transaction('readwrite',s=>s.put(record));return record;}
+export async function acknowledge(ids){for(const id of ids)await transaction('readwrite',s=>s.delete(id));}

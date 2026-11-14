@@ -1,0 +1,19 @@
+{
+  "name": "aegis-campus",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "python -m unittest discover -s tests -p test_*.py -v"
+  },
+  "dependencies": {
+    "@aws-amplify/ui-react": "latest",
+    "@aws-amplify/ui-react-liveness": "latest",
+    "aws-amplify": "latest",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0"
+  }
+}

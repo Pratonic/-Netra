@@ -1,0 +1,24 @@
+{
+  "region": "us-east-1",
+  "account": "010526260400",
+  "service_role": {
+    "name": "AegisCampusService",
+    "trust": {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]},
+    "permissions": {"Version":"2012-10-17","Statement":[
+      {"Effect":"Allow","Action":["dynamodb:GetItem","dynamodb:PutItem","dynamodb:UpdateItem","dynamodb:DeleteItem","dynamodb:Query"],"Resource":"arn:aws:dynamodb:us-east-1:010526260400:table/AegisCampus"},
+      {"Effect":"Allow","Action":["logs:CreateLogStream","logs:PutLogEvents"],"Resource":"arn:aws:logs:us-east-1:010526260400:log-group:/aws/lambda/AegisCampusService:*"},
+      {"Effect":"Allow","Action":["rekognition:CreateFaceLivenessSession","rekognition:GetFaceLivenessSessionResults","rekognition:CompareFaces"],"Resource":"*"},
+      {"Effect":"Allow","Action":"sts:AssumeRole","Resource":"arn:aws:iam::010526260400:role/AegisLivenessStream"}
+    ]}
+  },
+  "stream_role": {
+    "name": "AegisLivenessStream",
+    "trust": {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"arn:aws:iam::010526260400:role/AegisCampusService"},"Action":"sts:AssumeRole"}]},
+    "permissions": {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"rekognition:StartFaceLivenessSession","Resource":"*"}]},
+    "browser_session_seconds":900
+  },
+  "table": {"name":"AegisCampus","billing":"PAY_PER_REQUEST","maximum_read_request_units":10,"maximum_write_request_units":10,"encryption":"AWS-managed at rest","ttl_attribute":"expiresAt"},
+  "function": {"name":"AegisCampusService","runtime":"python3.12","memory_mb":512,"timeout_seconds":25,"reserved_concurrency":2,"url_auth":"NONE; all requests additionally require a private 256-bit gateway secret and a Sites visitor identity"},
+  "retention": {"enrollment":"until administrator deletion","decision_events_days":7,"sessions_hours":8,"liveness_session_minutes":3,"cloudwatch_days":3,"offline_anonymous_queue_hours":24,"offline_maximum_records":100},
+  "site_gateway": {"audience":"preserve existing owner-private audience","secret_names":["AEGIS_ORIGIN","AEGIS_GATEWAY_SECRET"]}
+}

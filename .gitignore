@@ -3,3 +3,10 @@ node_modules/
 *.log
 .openai/*.local.json
 qa.*
+backend/public/
+backend/__pycache__/
+tests/__pycache__/
+*.sqlite
+*.zip
+.env*
+!.env.example
