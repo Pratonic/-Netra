@@ -1,5 +1,5 @@
 """Loopback-only development server. Uses an in-memory store; no AWS calls."""
-import json, secrets, sys, threading
+import json, os, secrets, sys, threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from service import App, MemoryStore, password_hash
 
@@ -29,6 +29,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length',len(body));self.end_headers();self.wfile.write(body)
 
 if __name__=='__main__':
-    print('त्रिNetra local service: http://127.0.0.1:8770',flush=True)
+    port=int(os.environ.get('TRINETRA_DEV_PORT','8770'))
+    print(f'त्रिNetra local service: http://127.0.0.1:{port}',flush=True)
     print('In-memory development data. AWS liveness is disabled locally.',flush=True)
-    ThreadingHTTPServer(('127.0.0.1',8770),Handler).serve_forever()
+    ThreadingHTTPServer(('127.0.0.1',port),Handler).serve_forever()

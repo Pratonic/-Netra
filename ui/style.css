@@ -12,3 +12,24 @@ nav a{color:#83758e;font-size:12px}.sidebar nav a.active{color:#7856ab}.sidebar 
 
 
 .brand-name{font-family:Manrope,"Noto Sans Devanagari","Nirmala UI",sans-serif;letter-spacing:-.5px}.brand-symbol>svg{width:22px;height:22px;stroke-width:1.6}
+/* Decision card: one consistent view for every outcome. */
+.compact-result{padding:28px 30px;text-align:left}
+.compact-result .result-icon{width:50px;height:50px;margin:0 0 18px;border-radius:16px}
+.compact-result h2{font-size:27px;line-height:1.18;margin:0 0 10px}
+.decision-reason{font-size:14px;line-height:1.6;color:var(--muted);min-height:44px;margin:0 0 24px}
+.decision-person{display:flex;gap:13px;align-items:center;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left}
+.person-initial{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#edf1e7;color:#385238;font-weight:700;font-size:18px}
+.person-initial svg{width:21px;height:21px}
+.decision-person strong{display:block;font-size:17px;overflow-wrap:anywhere}
+.decision-person small{display:block;margin-top:5px;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.decision-metrics{display:grid;grid-template-columns:1fr 1fr;margin:22px 0 0;gap:14px}
+.decision-metrics dt{font-size:12px;color:var(--muted);margin-bottom:7px}
+.decision-metrics dd{margin:0;font-size:29px;font-weight:600;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.decision-metrics small{display:block;font-size:11px;color:var(--muted);margin-top:5px}
+.decision-actions{display:grid;gap:10px;margin-top:25px}
+.decision-actions>small{text-align:center;font-size:11px}
+.attendant-link{margin-top:20px;padding:0;font-size:13px}
+.view-count{display:inline-block;margin-top:13px;padding:6px 11px;border-radius:20px;background:#edf1e7;color:#385238;font-size:12px;font-weight:600}
+.otp-input{font-size:28px!important;letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums}
+.result-card.allow .person-initial{background:#def1df}.result-card.deny .person-initial{background:#f9e9e6;color:#9c453b}.result-card.stepup .person-initial{background:#fff1cf;color:#8b671e}
+@media(max-width:600px){.compact-result{padding:24px}.compact-result h2{font-size:25px}.decision-person strong{font-size:16px}}

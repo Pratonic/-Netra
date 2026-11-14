@@ -11,9 +11,9 @@ The application login is layered inside the existing private Site audience. Pass
 
 ## Access flow
 
-1. An administrator verifies identity, obtains consent to AWS storage, and enrolls a portrait with a name and access rules.
+1. An administrator verifies identity, obtains consent to AWS storage, and enrolls a front portrait, email address and access rules, with up to five face views for pose coverage.
 2. The kiosk warms its models and camera. The initial local recognition check has a two-second budget and shows a candidate name when two usable samples agree.
-3. The backend checks current campus hours, active status, expiry, personal rules and closure dates. A local face match alone requests **Step-up verification**, never Allow.
+3. The backend checks current campus hours, active status, expiry, personal rules and closure dates. A local face match alone requests **Request verification**, never Allow.
 4. With explicit consent, the official AWS Amplify component streams a short live video to Amazon Rekognition.
 5. The server retrieves the AWS liveness result, rejects expired/replayed sessions, compares the returned live reference against the enrolled image, and checks permissions again. Only this trusted path can return **Allow**.
 
@@ -82,3 +82,11 @@ The 35 backend tests cover role authorization, session/CSRF protection, rate lim
 ## Deployment boundaries
 
 A physical gate needs an authenticated controller and enforcement integration. Rollout also requires camera-injection defenses, calibrated thresholds, adversarial tests on the intended hardware, monitoring and individual accounts. Details are kept in documentation and the expandable System panel so the main workflows remain concise.
+
+## Local update: pose, decisions and email
+
+Recognition now uses SSD MobileNet, full landmark alignment, higher-resolution frames and multiple enrollment views. The compact result panel covers Allow, Deny and Request verification. Email codes use an SES adapter, but sending is disabled until a verified sender and scoped permission are configured. A successful code confirms the mailbox for an attended ID check; it does not unlock the gate.
+
+Read [research and repository decisions](RESEARCH.md), [email activation](EMAIL-SETUP.md), and the [minimal hardware plan](HARDWARE.md). The two-second initial check is a deadline, not a measured device-wide guarantee. Real-camera pose/range/PAD evaluation and real SES delivery are still outstanding.
+
+Run `npm run build`, `npm test`, then `python -X utf8 backend/dev.py` for local review at `http://127.0.0.1:8770`. The local server keeps data only in memory and has no cloud liveness or email sender. `TRINETRA_DEV_PORT` can select another loopback port. No local test automatically pushes or deploys.
