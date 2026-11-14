@@ -29,6 +29,6 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length',len(body));self.end_headers();self.wfile.write(body)
 
 if __name__=='__main__':
-    print('Aegis local service: http://127.0.0.1:8770',flush=True)
+    print('त्रिNetra local service: http://127.0.0.1:8770',flush=True)
     print('In-memory development data. AWS liveness is disabled locally.',flush=True)
     ThreadingHTTPServer(('127.0.0.1',8770),Handler).serve_forever()

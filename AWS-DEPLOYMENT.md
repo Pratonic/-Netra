@@ -1,4 +1,4 @@
-# Aegis AWS deployment — approval scope
+# त्रिNetra AWS deployment — approval scope
 
 Account **010526260400**, region **us-east-1**. The supplied AWS session has been authenticated successfully. The user explicitly approved this plan in chat. The listed IAM roles, table, function, protected URL and log retention have been provisioned.
 

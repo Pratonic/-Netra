@@ -1,4 +1,4 @@
-# Aegis Campus Access
+# त्रिNetra Campus Access
 
 A campus access application with separate administrator and kiosk sessions, cloud-managed enrollment, time-based authorization, Amazon Rekognition liveness integration and a conservative offline workflow.
 

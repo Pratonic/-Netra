@@ -1,4 +1,4 @@
-# Aegis verification record
+# त्रिNetra verification record
 
 - **35 backend tests passed.** Role authorization, credentials, throttling, cookie flags, expiry, viewer binding, CSRF, schedule boundaries, overnight access, timezone handling, closures, suspension, enrollment expiry, prechecks never allowing, trusted liveness decisions, replay rejection, wrong identity, revocation/schedule changes during verification, named-history deletion and safe offline sync were covered.
 - JavaScript syntax checks and the official AWS liveness bundle build passed.

@@ -1,9 +1,19 @@
+const brandedAssets = __TRINETRA_ASSETS__;
+function secureResponse(output) {
+  output.headers.set('Referrer-Policy','strict-origin-when-cross-origin');
+  output.headers.set('X-Content-Type-Options','nosniff');
+  output.headers.set('Permissions-Policy','camera=(self), microphone=(), geolocation=()');
+  output.headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob: https://*.cloudfront.net https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.amazonaws.com; media-src 'self' blob:; connect-src 'self' https://*.amazonaws.com wss://*.amazonaws.com https://*.cloudfront.net https://cdn.jsdelivr.net https://unpkg.com https://tfhub.dev https://*.kaggle.com https://storage.googleapis.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'");
+  return output;
+}
 export default {
   async fetch(request, env) {
-    if (!env.AEGIS_ORIGIN || !env.AEGIS_GATEWAY_SECRET) return new Response('Aegis service is awaiting AWS deployment.', {status:503});
+    if (!env.AEGIS_ORIGIN || !env.AEGIS_GATEWAY_SECRET) return new Response('त्रिNetra service is awaiting AWS deployment.', {status:503});
     const url=new URL(request.url);
     const viewer=request.headers.get('oai-authenticated-user-id');
     if (!viewer) return new Response('Sign in to this private workspace to continue.',{status:401});
+    const asset=brandedAssets[url.pathname];
+    if (asset && ['GET','HEAD'].includes(request.method)) return secureResponse(new Response(request.method==='HEAD'?null:asset.body,{headers:{'Content-Type':asset.type,'Cache-Control':'no-cache','Service-Worker-Allowed':'/'}}));
     if (!['GET','HEAD','POST','PUT','PATCH','DELETE'].includes(request.method)) return new Response('Method not allowed',{status:405});
     if (!['GET','HEAD'].includes(request.method)) {
       const origin=request.headers.get('origin');
@@ -19,12 +29,8 @@ export default {
       origin.pathname=url.pathname;origin.search=url.search;
       const response=await fetch(origin.toString(),{method:request.method,headers,body:['GET','HEAD'].includes(request.method)?undefined:request.body,redirect:'manual',signal:AbortSignal.timeout(28000)});
       const output=new Response(response.body,response);
-      output.headers.set('Referrer-Policy','strict-origin-when-cross-origin');
-      output.headers.set('X-Content-Type-Options','nosniff');
-      output.headers.set('Permissions-Policy','camera=(self), microphone=(), geolocation=()');
-      output.headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob: https://*.cloudfront.net https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.amazonaws.com; media-src 'self' blob:; connect-src 'self' https://*.amazonaws.com wss://*.amazonaws.com https://*.cloudfront.net https://cdn.jsdelivr.net https://unpkg.com https://tfhub.dev https://*.kaggle.com https://storage.googleapis.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'");
       if(url.pathname.startsWith('/api/'))output.headers.set('Cache-Control','no-store');
-      return output;
+      return secureResponse(output);
     } catch {return Response.json({error:'Cloud connection lost. No automatic access is granted.'},{status:503,headers:{'Cache-Control':'no-store'}});}
   }
 };
